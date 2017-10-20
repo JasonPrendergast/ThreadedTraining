@@ -199,7 +199,7 @@ def train_neural_network(x):
             food=[]
             with open('lexicon-2500-2638.pickle','rb') as f:
                 lexicon = pickle.load(f)
-            with open('train_set_shuffled.csv', buffering=20000, encoding='latin-1') as f:
+            with open('train_set_shuffled_tiny.csv', buffering=20000, encoding='latin-1') as f:
                 for line in f:
                     food.append(line)
             
