@@ -1,2 +1,2 @@
 # ThreadedTraining
-Threaded Training. Using the football stats I created. Producer class preprocessing and consumer class training.
+Threaded sentiment Training for tweets. Producer class preprocessing and consumer class training.
