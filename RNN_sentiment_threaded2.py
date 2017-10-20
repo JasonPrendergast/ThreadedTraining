@@ -9,10 +9,8 @@ from nltk.stem import WordNetLemmatizer
 lemmatizer = WordNetLemmatizer()
 import math
 import sys
-#from tensorflow.examples.tutorials.mnist import input_data
-#from tensorflow.python.ops import rnn, rnn_cell
+from tensorflow.python.ops import rnn, rnn_cell
 from tensorflow.contrib import rnn
-#mnist = input_data.read_data_sets("/tmp/data/", one_hot = True)
 
 qfeatures=Queue.Queue(50)
 qlabels=Queue.Queue(50)
@@ -36,8 +34,6 @@ total_batches = int(1600000/batch_size)
 x = tf.placeholder('float', [None, n_chunks,chunk_size])
 y = tf.placeholder('float')
 
-#layer = {'weights':tf.Variable(tf.random_normal([rnn_size,n_classes])),
-#             'biases':tf.Variable(tf.random_normal([n_classes]))}
 hidden_1_layer = {'f_fum':n_nodes_hl1,
                   'weight':tf.Variable(tf.random_normal([rnn_size, n_nodes_hl1])),
                   'bias':tf.Variable(tf.random_normal([n_nodes_hl1]))}
@@ -58,10 +54,7 @@ class Producer:
         self.i=0
         self.lexicon=lexicon
         self.end=False
-        #self.batch_x = []
-        #self.batch_y =[]
-        #self.batch_tweets=[]
-        #batches_run=0
+        
     def run(self):
         global qfeatures,qlabels,errorcount        
         while (self.i < len(self.food)):
@@ -70,11 +63,8 @@ class Producer:
             batch_x = []
             batch_y = []
             batch_tweets=[]
-            #batches_run = 0
-            #print('inwhile')
-            #print(self.i)
+            
             if(self.nextTime<time.clock()):
-                #for b in range(batch_size):
                 line=self.food[self.i]#random.randrange(len(self.food))]
                 label = line.split(':::')[0]
                 tweet = line.split(':::')[1]
@@ -108,10 +98,7 @@ class Producer:
                 
                     
                     
-                #print(' Current '+str(self.i)+' '+str(len(self.food)))
-                #'qfeatures '+str(batch_x)+' labels '+str(batch_y)+
                 
-            #self.end=True
         print('finished in')
 
 class Consumer:
@@ -128,9 +115,8 @@ class Consumer:
         batch_x=[]
         batch_y=[]
         while (self.i<(self.max-(errorbatch+1))):
-           #print(self.i)
-           # print(self.max)
-            #print(errorcount)
+          
+           
             if(self.nextTime<time.clock() and not qfeatures.empty()):
                 while (len(batch_x)<batch_size):
                     #print()
@@ -138,33 +124,25 @@ class Consumer:
                     batch_y.append(qlabels.get())
                 
                 batch_x=np.array(batch_x)
-                #print('batch length')
-                #print(len(batch_x))
+                
                 batch_x = batch_x.reshape((batch_size,n_chunks,chunk_size))
-                #print('after2')
+                
                 _, c = self.sess.run([self.optimizer, self.cost], feed_dict={x: batch_x,y: np.array(batch_y)})
-                #print('after3')
+                
                 if not math.isnan(c):
                     print('not NAN??')
                     print(c)
-                    #c=1
-                #    sys.exit('nan error')
+                    
 
                 epoch_loss += c
-                #print(c)
+                
                 if (self.i/100).is_integer():
                     print('Removing: '+str(self.i)+'cost: '+str(epoch_loss))
-                #print('after4')
-                #print(epoch_loss)
-                #print('after5')
+                
                 self.nextTime+=(random.random()*2)/100
-                #print(self.nextTime)
+                
                 self.i+=1
-                #print('after7')
-                #f=self.food[random.range(len(self.food))]
-                #q.put(f)
-               # print('adding'+f)
-                #self.nextTime+=random.random()
+                
         finishedflag=1
         print('finished out')
 
@@ -179,8 +157,7 @@ def recurrent_neural_network(x):
     x = tf.split(x, n_chunks, 0)
     #x = tf.split(0, n_chunks, x)
 
-    #lstm_cell = rnn_cell.BasicLSTMCell(rnn_size,state_is_tuple=True)
-    
+   
     l1 = tf.add(tf.matmul(x,hidden_1_layer['weight']), hidden_1_layer['bias'])
     l1 = tf.nn.relu(l1)
     l2 = tf.add(tf.matmul(l1,hidden_2_layer['weight']), hidden_2_layer['bias'])
@@ -189,14 +166,12 @@ def recurrent_neural_network(x):
     lstm_cell = rnn.BasicLSTMCell(rnn_size)
     
     outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
-    #outputs, states = rnn.rnn(lstm_cell, x, dtype=tf.float32)
-
+    
     output = tf.matmul(outputs[-1],output_layer['weight']) + output_layer['bias']
 
     return output
 
 saver = tf.train.Saver()
-#saver = tf.train.import_meta_graph('./model.ckpt.meta')
 tf_log = 'tf.log'
 epoch_log ='epoch.log'
 
@@ -204,12 +179,10 @@ def train_neural_network(x):
     prediction = recurrent_neural_network(x)
     
     cost = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
-    #cost = tf.reduce_mean( tf.nn.softmax_cross_entropy_with_logits(prediction,y) )
     optimizer = tf.train.AdamOptimizer(0.01).minimize(cost)
     
     
     with tf.Session() as sess:
-        #sess.run(tf.initialize_all_variables())
         sess.run(tf.global_variables_initializer())
         try:
             epoch = int(open(tf_log,'r').read().split('\n')[-2])+1
@@ -223,7 +196,6 @@ def train_neural_network(x):
             epoch_loss = 1
             errorcount=0
             errorbatch=0
-            #epoch_loss=0
             food=[]
             with open('lexicon-2500-2638.pickle','rb') as f:
                 lexicon = pickle.load(f)
@@ -238,10 +210,10 @@ def train_neural_network(x):
             pt.start()
             time.sleep(4)   
             ct.start()
-            #time.sleep(10)
+            
             while(finishedflag==0):
                 time.sleep(1)
-                #print('wait')   
+                   
                         
                     
             finishedflag==0           
@@ -254,27 +226,6 @@ def train_neural_network(x):
             with open(epoch_log,'a') as f:
                 f.write('Epoch'+str(epoch)+'completed out of'+str(hm_epochs)+'loss:'+str(epoch_loss)+'\n')
             epoch +=1
-        #try:
         
-        #except:
-        #    print('didnt save')
-        #    sys.exit('save error')
-        
-
-        #for epoch in range(hm_epochs):
-        #    epoch_loss = 0
-        #    for _ in range(int(mnist.train.num_examples/batch_size)):
-        #        epoch_x, epoch_y = mnist.train.next_batch(batch_size)
-        #        epoch_x = epoch_x.reshape((batch_size,n_chunks,chunk_size))
-#
-        #        _, c = sess.run([optimizer, cost], feed_dict={x: epoch_x, y: epoch_y})
-        #        epoch_loss += c
-
-        #    print('Epoch', epoch, 'completed out of',hm_epochs,'loss:',epoch_loss)
-
-       # correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
-
-       # accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-       # print('Accuracy:',accuracy.eval({x:mnist.test.images.reshape((-1, n_chunks, chunk_size)), y:mnist.test.labels}))
 
 train_neural_network(x)
