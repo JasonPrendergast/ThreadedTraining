@@ -6,12 +6,12 @@ import numpy as np
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
 import math
 import sys
 from tensorflow.python.ops import rnn, rnn_cell
-from tensorflow.contrib import rnn
+#from tensorflow.contrib import rnn
 
+lemmatizer = WordNetLemmatizer()
 qfeatures=Queue.Queue(50)
 qlabels=Queue.Queue(50)
 finishedflag=0
@@ -49,7 +49,7 @@ output_layer = {'f_fum':None,
 
 class Producer:
     def __init__(self,food,lexicon):
-        self.food=food#['ham','soup','salad']
+        self.food=food
         self.nextTime=0
         self.i=0
         self.lexicon=lexicon
@@ -94,16 +94,11 @@ class Producer:
                     if errorcount==32:
                         errorbatch+=1
                         errorcount=0
-                    
-                
-                    
-                    
-                
         print('finished in')
-
+                
 class Consumer:
     def __init__(self,maximum,sess,optimizer,cost):
-        #self.food=['ham','soup','salad']
+       
         self.nextTime=1
         self.max=(maximum/batch_size)
         self.i=0
