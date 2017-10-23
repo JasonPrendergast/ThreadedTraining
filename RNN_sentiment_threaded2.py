@@ -9,8 +9,8 @@ from nltk.stem import WordNetLemmatizer
 import math
 import sys
 from tensorflow.python.ops import rnn, rnn_cell
-#from tensorflow.contrib import rnn
 
+#create globals
 lemmatizer = WordNetLemmatizer()
 qfeatures=Queue.Queue(50)
 qlabels=Queue.Queue(50)
@@ -46,7 +46,7 @@ output_layer = {'f_fum':None,
                 'weight':tf.Variable(tf.random_normal([n_nodes_hl2, n_classes])),
                 'bias':tf.Variable(tf.random_normal([n_classes])),}
 
-
+#producer class crushing words in to numbers
 class Producer:
     def __init__(self,food,lexicon):
         self.food=food
@@ -95,7 +95,7 @@ class Producer:
                         errorbatch+=1
                         errorcount=0
         print('finished in')
-                
+#Consumer class pushing vectors into tensorflow
 class Consumer:
     def __init__(self,maximum,sess,optimizer,cost):
        
@@ -143,7 +143,7 @@ class Consumer:
 
 
 
-
+#Define the network shape for tensorflow
 def recurrent_neural_network(x):
     
 
@@ -169,7 +169,7 @@ def recurrent_neural_network(x):
 saver = tf.train.Saver()
 tf_log = 'tf.log'
 epoch_log ='epoch.log'
-
+#loops for threads to exist within
 def train_neural_network(x):
     prediction = recurrent_neural_network(x)
     
