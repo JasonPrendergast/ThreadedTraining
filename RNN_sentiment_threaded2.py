@@ -54,7 +54,6 @@ class Producer:
         self.i=0
         self.lexicon=lexicon
         self.end=False
-        
     def run(self):
         global qfeatures,qlabels,errorcount        
         while (self.i < len(self.food)):
@@ -63,7 +62,6 @@ class Producer:
             batch_x = []
             batch_y = []
             batch_tweets=[]
-            
             if(self.nextTime<time.clock()):
                 line=self.food[self.i]#random.randrange(len(self.food))]
                 label = line.split(':::')[0]
@@ -98,7 +96,6 @@ class Producer:
 #Consumer class pushing vectors into tensorflow
 class Consumer:
     def __init__(self,maximum,sess,optimizer,cost):
-       
         self.nextTime=1
         self.max=(maximum/batch_size)
         self.i=0
@@ -110,73 +107,45 @@ class Consumer:
         batch_x=[]
         batch_y=[]
         while (self.i<(self.max-(errorbatch+1))):
-          
-           
-            if(self.nextTime<time.clock() and not qfeatures.empty()):
+          if(self.nextTime<time.clock() and not qfeatures.empty()):
                 while (len(batch_x)<batch_size):
                     #print()
                     batch_x.append(qfeatures.get())
                     batch_y.append(qlabels.get())
-                
                 batch_x=np.array(batch_x)
-                
                 batch_x = batch_x.reshape((batch_size,n_chunks,chunk_size))
-                
-                _, c = self.sess.run([self.optimizer, self.cost], feed_dict={x: batch_x,y: np.array(batch_y)})
-                
+                 _, c = self.sess.run([self.optimizer, self.cost], feed_dict={x: batch_x,y: np.array(batch_y)})
                 if not math.isnan(c):
                     print('not NAN??')
                     print(c)
-                    
-
                 epoch_loss += c
-                
                 if (self.i/100).is_integer():
                     print('Removing: '+str(self.i)+'cost: '+str(epoch_loss))
-                
                 self.nextTime+=(random.random()*2)/100
-                
                 self.i+=1
-                
         finishedflag=1
         print('finished out')
-
-
-
 #Define the network shape for tensorflow
 def recurrent_neural_network(x):
-    
-
     x = tf.transpose(x, [1,0,2])
     x = tf.reshape(x, [-1, chunk_size])
     x = tf.split(x, n_chunks, 0)
-    #x = tf.split(0, n_chunks, x)
-
-   
     l1 = tf.add(tf.matmul(x,hidden_1_layer['weight']), hidden_1_layer['bias'])
     l1 = tf.nn.relu(l1)
     l2 = tf.add(tf.matmul(l1,hidden_2_layer['weight']), hidden_2_layer['bias'])
     l2 = tf.nn.tanh(l2)#relu(l2)
-    
     lstm_cell = rnn.BasicLSTMCell(rnn_size)
-    
     outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
-    
     output = tf.matmul(outputs[-1],output_layer['weight']) + output_layer['bias']
-
-    return output
-
+  return output
 saver = tf.train.Saver()
 tf_log = 'tf.log'
 epoch_log ='epoch.log'
 #loops for threads to exist within
 def train_neural_network(x):
     prediction = recurrent_neural_network(x)
-    
     cost = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer(0.01).minimize(cost)
-    
-    
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         try:
@@ -197,7 +166,6 @@ def train_neural_network(x):
             with open('train_set_shuffled_tiny.csv', buffering=20000, encoding='latin-1') as f:
                 for line in f:
                     food.append(line)
-            
             p=Producer(food,lexicon)
             c=Consumer(len(food),sess,optimizer,cost)
             pt=threading.Thread(target=p.run,args=())
@@ -205,16 +173,11 @@ def train_neural_network(x):
             pt.start()
             time.sleep(4)   
             ct.start()
-            
             while(finishedflag==0):
                 time.sleep(1)
-                   
-                        
-                    
             finishedflag==0           
             print('ending')
             saver.save(sess, "./model.ckpt")
-            
             print('Epoch', epoch, 'completed out of',hm_epochs,'loss:',epoch_loss,'nanerrors:',errorcount)
             with open(tf_log,'a') as f:
                 f.write(str(epoch)+'\n')
