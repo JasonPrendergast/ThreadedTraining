@@ -93,6 +93,7 @@ class Producer:
                         errorbatch+=1
                         errorcount=0
         print('finished in')
+        
 #Consumer class pushing vectors into tensorflow
 class Consumer:
     def __init__(self,maximum,sess,optimizer,cost):
@@ -125,6 +126,7 @@ class Consumer:
                 self.i+=1
         finishedflag=1
         print('finished out')
+        
 #Define the network shape for tensorflow
 def recurrent_neural_network(x):
     x = tf.transpose(x, [1,0,2])
